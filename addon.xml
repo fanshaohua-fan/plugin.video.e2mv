@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.e2mv"
+    name="亿途影视(e2mv)"
+    version="0.0.1"
+    provider-name="fanshaohua.fan">
+    <extension
+        point="xbmc.python.pluginsource"
+        library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">E2MV video plugin</summary>
+        <summary lang="zh">亿途影视视频插件</summary>
+        <description lang="en">Online videos from e2mv.com</description>
+        <description lang="zh">亿途影视(e2mv.com)</description>
+        <platform>all</platform>
+    </extension>
+</addon>
