@@ -2,6 +2,10 @@
 # 亿途影视(e2mv.com)
 ######################################################
 
+# Version 0.0.2  2015-6-21 fanshaohua.fan
+# Add pagination
+# Fix bugs
+
 # Version 0.0.1  2015-6-14 fanshaohua.fan
 # Initial version
 ######################################################

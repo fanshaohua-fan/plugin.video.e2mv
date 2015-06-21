@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="plugin.video.e2mv"
     name="亿途影视(e2mv)"
-    version="0.0.1"
+    version="0.0.2"
     provider-name="fanshaohua.fan">
     <extension
         point="xbmc.python.pluginsource"

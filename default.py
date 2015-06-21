@@ -13,13 +13,27 @@ __profile__   = xbmc.translatePath( __addon__.getAddonInfo('profile') )
 cookieFile    = __profile__ + 'cookies.e2mv'
 UserAgent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3'
 
-VOD_DICT = {'电视剧':'vod-show-id-2.html',
-'电影':'vod-show-id-1.html',
-'动漫':'vod-show-id-3.html',
-'综艺':'vod-show-id-4.html',
-'体育':'vod-show-id-5.html',
-'音乐':'vod-show-id-27.html',
-'其它':'vod-show-id-7.html'}
+VOD_LIST = [('电视剧','/?s=vod-show-id-2.html'),
+('国产剧','/?s=vod-show-id-15.html'),
+('港台剧','/?s=vod-show-id-16.html'),
+('欧美剧','/?s=vod-show-id-17.html'),
+('韩剧','/?s=vod-show-id-18.html'),
+('海外剧','/?s=vod-show-id-19.html'),
+('日剧','/?s=vod-show-id-32.html'),
+('电影','/?s=vod-show-id-1.html'),
+('动作片','/?s=vod-show-id-8.html'),
+('喜剧片','/?s=vod-show-id-9.html'),
+('爱情片','/?s=vod-show-id-10.html'),
+('奇幻片','/?s=vod-show-id-11.html'),
+('恐怖片','/?s=vod-show-id-12.html'),
+('战争片','/?s=vod-show-id-13.html'),
+('故事片','/?s=vod-show-id-14.html'),
+('纪录片','/?s=vod-show-id-26.html'),
+('动漫','/?s=vod-show-id-3.html'),
+('综艺','/?s=vod-show-id-4.html'),
+('体育','/?s=vod-show-id-5.html'),
+('音乐','/?s=vod-show-id-27.html'),
+('其它','/?s=vod-show-id-7.html')]
 
 ##################################################################################
 # Routine to fetch url site data using Mozilla browser
@@ -86,7 +100,7 @@ def getHttpData(url):
     return httpdata
 
 ##################################################################################
-def addDir(name,url,mode,pic,isDir=True,sn=''):
+def addDir(name, url, mode, pic = '', isDir = True, sn = ''):
     if sn != '': sn=str(sn)+". "
     u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)
     ok=True
@@ -99,10 +113,10 @@ def addDir(name,url,mode,pic,isDir=True,sn=''):
 # E2MV Main Menu
 ##################################################################################
 def MainMenu():
-    for k, v in VOD_DICT.items():
-        name = k
-        url = 'http://e2mv.com/?s=' + v
-        addDir( name, url, '1', __addonicon__, True)
+    for v in VOD_LIST:
+        name = v[0]
+        url = 'http://e2mv.com' + v[1]
+        addDir( name, url, '1')
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
     
 def showVideoLists(url):   
@@ -118,13 +132,21 @@ def showVideoLists(url):
             url     = match[0][0]
             name    = match[0][1]
 
+            thumb = ''
             m_thumb = re.compile('<img alt=".+?"  data-original="(.+?)" src="/stitc/place.gif" />').findall(item)
             if m_thumb:
                 thumb = 'http://e2mv.com' + m_thumb[0]
 
             addDir(name, url, '9', thumb)
 
-        xbmcplugin.endOfDirectory(int(sys.argv[1]))
+    # pagination
+    matchli = re.compile('<a href="(\/\?s=vod-show-id-\d+?-p-\d+?.html)">(\d+)</a>').findall(link)
+    for v in matchli:
+        name = '第 %s 页' % v[1]
+        url = 'http://e2mv.com' + v[0]
+        addDir( name, url, '1')
+
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def showEpisodeLists(url):   
     #url = 'http://e2mv.com/?s=vod-read-id-36626.html'
