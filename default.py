@@ -176,22 +176,22 @@ def getStreamUrl(url):
         xbmc.executebuiltin('XBMC.Notification(Info:,'+translation(30022)+' (DailyMotion)!,5000)')
         return ""
     else:
-        matchFullHD = re.compile('"stream_h264_hd1080_url":"(.+?)"', re.DOTALL).findall(content)
-        matchHD = re.compile('"stream_h264_hd_url":"(.+?)"', re.DOTALL).findall(content)
-        matchHQ = re.compile('"stream_h264_hq_url":"(.+?)"', re.DOTALL).findall(content)
-        matchSD = re.compile('"stream_h264_url":"(.+?)"', re.DOTALL).findall(content)
-        matchLD = re.compile('"stream_h264_ld_url":"(.+?)"', re.DOTALL).findall(content)
+        matchFullHD = re.compile('"1080":(.+?)"url":"(.*?)"}\]', re.DOTALL).findall(content)
+        matchHD = re.compile('"720":(.+?)"url":"(.*?)"}\]', re.DOTALL).findall(content)
+        matchHQ = re.compile('"480":(.+?)"url":"(.*?)"}\]', re.DOTALL).findall(content)
+        matchSD = re.compile('"380":(.+?)"url":"(.*?)"}\]', re.DOTALL).findall(content)
+        matchLD = re.compile('"240":(.+?)"url":"(.*?)"}\]', re.DOTALL).findall(content)
         url = ""
         if matchFullHD and maxVideoQuality == "1080p":
-            url = urllib.unquote_plus(matchFullHD[0]).replace("\\", "")
+            url = urllib.unquote_plus(matchFullHD[0][1]).replace("\\", "")
         elif matchHD and (maxVideoQuality == "720p" or maxVideoQuality == "1080p"):
-            url = urllib.unquote_plus(matchHD[0]).replace("\\", "")
+            url = urllib.unquote_plus(matchHD[0][1]).replace("\\", "")
         elif matchHQ:
-            url = urllib.unquote_plus(matchHQ[0]).replace("\\", "")
+            url = urllib.unquote_plus(matchHQ[0][1]).replace("\\", "")
         elif matchSD:
-            url = urllib.unquote_plus(matchSD[0]).replace("\\", "")
+            url = urllib.unquote_plus(matchSD[0][1]).replace("\\", "")
         elif matchLD:
-            url = urllib.unquote_plus(matchLD[0]).replace("\\", "")
+            url = urllib.unquote_plus(matchLD[0][1]).replace("\\", "")
         return url
 
 def getVideoUrl(url):
