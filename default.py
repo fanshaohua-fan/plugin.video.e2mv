@@ -4,7 +4,7 @@ import xbmcaddon
 import gzip, StringIO
 import cookielib
 
-maxVideoQuality  = '1080p'
+maxVideoQuality  = '720p'
 __addonid__   = "plugin.video.e2mv"
 __addon__     = xbmcaddon.Addon(id=__addonid__)
 __addonicon__ = os.path.join( __addon__.getAddonInfo('path'), 'icon.png' )
