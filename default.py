@@ -35,6 +35,7 @@ VOD_LIST = [('电视剧','/?s=vod-show-id-2.html'),
 ('音乐','/?s=vod-show-id-27.html'),
 ('其它','/?s=vod-show-id-7.html')]
 
+
 ##################################################################################
 # Routine to fetch url site data using Mozilla browser
 # - delete '\r|\n|\t' for easy re.compile
@@ -100,23 +101,24 @@ def getHttpData(url):
     return httpdata
 
 ##################################################################################
-def addDir(name, url, mode, pic = '', isDir = True, sn = ''):
-    if sn != '': sn=str(sn)+". "
+def addDir(name, url, mode, pic = '', isDir = True):
     u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)
-    ok=True
-    li=xbmcgui.ListItem(sn+name,'', pic, pic)
+    li=xbmcgui.ListItem(name, '', pic, pic)
     li.setInfo( type="Video", infoLabels={ "Title": name } )
-    ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=li,isFolder=isDir)
-    return ok
+    xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=li,isFolder=isDir)
 
 ##################################################################################
 # E2MV Main Menu
 ##################################################################################
 def MainMenu():
+    # add search item
+    addDir('Search', '', '2')
+
     for v in VOD_LIST:
         name = v[0]
         url = 'http://e2mv.com' + v[1]
         addDir( name, url, '1')
+
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
     
 def showVideoLists(url):   
@@ -126,7 +128,6 @@ def showVideoLists(url):
 
     matchli = re.compile('<li>[\s\S]*?</li>').findall(link)
     if len(matchli):
-        totalItems=len(matchli)
         for item in matchli:
             match = re.compile('<a href="(.+?)" target="_self" title="(.+?)" class="avatar play">').findall(item)
             url     = match[0][0]
@@ -156,7 +157,6 @@ def showEpisodeLists(url):
 
     matchli = re.compile('<div style="align:center">[\s\S]*?</div>').findall(link)
     if len(matchli):
-        totalItems=len(matchli)
         for item in matchli:
             match = re.compile('<a  href="(.+?)" target="_self">(.+?)</a>').findall(item)
 
@@ -166,7 +166,7 @@ def showEpisodeLists(url):
             li = xbmcgui.ListItem(title, iconImage = '', thumbnailImage = '')
             li.setInfo(type = "Video", infoLabels = {"Title":title})
             u = sys.argv[0]+"?mode=10"+"&name="+urllib.quote_plus(title)+"&url="+urllib.quote_plus(url)
-            xbmcplugin.addDirectoryItem(int(sys.argv[1]), u, li, False, totalItems)
+            xbmcplugin.addDirectoryItem(int(sys.argv[1]), u, li, True)
 
         xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
@@ -200,7 +200,7 @@ def getVideoUrl(url):
     link = getHttpData(url)
     if link == None: return ''
     
-    match = re.compile('<iframe frameborder="0" [\s\S]*? src="(.+?)"></iframe>').findall(link)
+    match = re.compile('<iframe frameborder="0" [\s\S]*? src="(.+?)" allowfullscreen></iframe>').findall(link)
 
     # http://www.dailymotion.com/embed/video/ktKXT5y0V1nlwSa5uI7?autoplay=1&logo=0&hideInfos=1&start=0&syndication=148844?autoPlay=1
     url = match[0]
@@ -208,8 +208,6 @@ def getVideoUrl(url):
     return getStreamUrl(url.split('?')[0])
 
 def playVideo(name,url):
-    videoplaycont = __addon__.getSetting('video_vplaycont')
-    
     playlist=xbmc.PlayList(1)
     playlist.clear()
 
@@ -222,11 +220,14 @@ def playVideo(name,url):
     li.setInfo(type = "Video", infoLabels = {"Title":name})
 
     v_url = getVideoUrl(url)
+    if pDialog.close() or not v_url:
+        dialog = xbmcgui.Dialog()
+        dialog.ok("匹配视频", "视频无法访问!")
+        return
 
     xbmc.log("fanshaohua.fan: %s" % v_url)
     playlist.add(v_url, li)
 
-    pDialog.close() 
     xbmc.Player(1).play(playlist)
 
 ##################################################################################
@@ -246,6 +247,38 @@ def get_params():
             if (len(splitparams))==2:
                 param[splitparams[0]]=splitparams[1]
     return param
+
+def search():
+    keyboard = xbmc.Keyboard()
+    while True:
+        keyboard.doModal()
+        if keyboard.isConfirmed():
+            search_text = keyboard.getText()
+            if not search_text:
+                dialog = xbmcgui.Dialog()
+                dialog.ok("Search", "输入内容未空!")
+                return
+            else:
+                break
+        else:
+            break
+
+    if keyboard.isConfirmed():
+        url = 'http://e2mv.com/?s=vod-search-wd-%s.html' %  keyboard.getText()
+        link = getHttpData(url)
+        if link == None: return
+
+        matchli = re.compile('<h1><a href="(.+?)" target="_blank"').findall(link)
+        if len(matchli):
+            queries = {'mode': '9', 'url': matchli[0]}
+            pluginurl = sys.argv[0] + '?' + urllib.urlencode(queries)
+            builtin = 'Container.Update(%s)' % (pluginurl)
+            xbmc.log("fanshaohua.fan: %s" % builtin)
+            xbmc.executebuiltin(builtin)
+        else:
+            dialog = xbmcgui.Dialog()
+            dialog.ok("Search", "未查找到相关内容!")
+
 
 ##################################################################################
 
@@ -269,6 +302,7 @@ except:
 ctl = {
             None : ('MainMenu()'),
             1    : ('showVideoLists(url)'),
+            2    : ('search()'),
 
             9    : ('showEpisodeLists(url)'),
             10   : ('playVideo(name,url)'),
